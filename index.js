@@ -1,18 +1,17 @@
 const express = require("express");
 const app = express();
 const db = require("./db");
-const s3 = require("./s3");
-const { s3Url } = require("./config.json");
+const { imgUrl } = require("./config.json");
 
 /////// MULTER ////////
-// handles files and stores them in the "uploads" folder
+// handles files and stores them in the "public/img" folder
 const multer = require("multer");
 const uidSafe = require("uid-safe");
 const path = require("path");
 
 const diskStorage = multer.diskStorage({
     destination: function (req, file, callback) {
-        callback(null, __dirname + "/uploads");
+        callback(null, __dirname + "/public/img");
     },
     filename: function (req, file, callback) {
         uidSafe(24).then(function (uid) {
@@ -56,11 +55,11 @@ app.get("/getall/:imageid", (req, res) => {
         });
 });
 
-app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
+app.post("/upload", uploader.single("file"), (req, res) => {
     if (req.file) {
         const { username, title, description } = req.body;
         if (title !== "" && username !== "") {
-            const url = `${s3Url}${req.file.filename}`;
+            const url = `${imgUrl}${req.file.filename}`;
             db.addImage(url, username, title, description).then(({ rows }) => {
                 res.json({
                     success: true,
